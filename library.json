@@ -1,0 +1,19 @@
+{
+  "name": "ESP32CamLib",
+  "version": "1.0.0",
+  "keywords": "ESP32CAM,AVI, CAM,",
+  "description": "ESP32CAM video recorder AVI with save in sdcard",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DouglasBgs"
+  },
+  "authors": [
+    {
+      "name": "Douglas Borges",
+      "email": "borgesdoga@gmail.com",
+      "maintainer": true
+    }
+  ],
+  "frameworks": "ESP32CAM",
+  "platforms": "*"
+}
