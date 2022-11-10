@@ -37,7 +37,6 @@ int xlength = total_frames_config * capture_interval / 1000;
 int total_frames = total_frames_config;
 int recording = 0;
 int ready = 0;
-int first = 0;
 int count = 1;
 
 int diskspeed = 0;
