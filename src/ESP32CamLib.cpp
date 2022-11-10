@@ -37,7 +37,7 @@
 TaskHandle_t CameraTask, AviWriterTask;
 SemaphoreHandle_t baton;
 
-void ESP32CamLib::codeForAviWriterTask(void *parameter)
+void codeForAviWriterTask(void *parameter)
 {
     uint32_t ulNotifiedValue;
     Serial.print("aviwriter, core ");
@@ -62,7 +62,7 @@ void ESP32CamLib::codeForAviWriterTask(void *parameter)
 // CameraTask runs on cpu 1 to take pictures and drop them in a queue
 //
 
-void ESP32CamLib::codeForCameraTask(void *parameter)
+void codeForCameraTask(void *parameter)
 {
     int pic_delay = 0;
     int next = 0;
@@ -204,7 +204,10 @@ void ESP32CamLib::codeForCameraTask(void *parameter)
     }
 }
 
-void inline ESP32CamLib::print_quartet(unsigned long i, FILE *fd)
+//
+// Writes an uint32_t in Big Endian at current file position
+//
+static void inline print_quartet(unsigned long i, FILE *fd)
 {
     uint8_t y[4];
 
@@ -222,7 +225,7 @@ void inline ESP32CamLib::print_quartet(unsigned long i, FILE *fd)
 //
 //  code copied from user @gemi254
 
-void ESP32CamLib::delete_old_stuff()
+void delete_old_stuff()
 {
 
     Serial.printf("Total space: %lluMB\n", SD_MMC.totalBytes() / (1024 * 1024));
@@ -267,7 +270,7 @@ void ESP32CamLib::delete_old_stuff()
     }
 }
 
-void ESP32CamLib::deleteFolderOrFile(const char *val)
+void deleteFolderOrFile(const char *val)
 {
     char val_w_slash[60];
     sprintf(val_w_slash, "/%s", val);
@@ -334,7 +337,7 @@ void ESP32CamLib::deleteFolderOrFile(const char *val)
     }
 }
 
-void ESP32CamLib::init_tasks()
+void init_tasks()
 {
 
     Serial.begin(115200);
@@ -422,7 +425,10 @@ void ESP32CamLib::init_tasks()
         delete_old_stuff();
 }
 
-void ESP32CamLib::major_fail()
+//
+// if we have no camera, or sd card, then flash rear led on and off to warn the human SOS - SOS
+//
+void major_fail()
 {
 
     Serial.println(" ");
@@ -457,7 +463,7 @@ void ESP32CamLib::major_fail()
     ESP.restart();
 }
 
-esp_err_t ESP32CamLib::init_sdcard()
+static esp_err_t init_sdcard()
 {
 
     // pinMode(12, PULLUP);
@@ -517,7 +523,7 @@ esp_err_t ESP32CamLib::init_sdcard()
 //   another_pic_avi() - write one more frame of movie
 //   end_avi() - write the final parameters and close the file
 
-void ESP32CamLib::make_avi()
+void make_avi()
 {
 
     if (newfile == 0 && recording == 1)
@@ -590,7 +596,7 @@ void ESP32CamLib::make_avi()
     }
 }
 
-void ESP32CamLib::config_camera()
+static void config_camera()
 {
 
     camera_config_t config;
@@ -665,7 +671,7 @@ void ESP32CamLib::config_camera()
 // start_avi - open the files and write in headers
 //
 
-void ESP32CamLib::start_avi()
+static void start_avi()
 {
 
     Serial.println("Starting an avi ");
@@ -799,7 +805,7 @@ void ESP32CamLib::start_avi()
 //  the "baton" semaphore makes sure that only one cpu is using the camera subsystem at a time
 //
 
-void ESP32CamLib::another_save_avi()
+static void another_save_avi()
 {
 
     xSemaphoreTake(baton, portMAX_DELAY);
@@ -901,7 +907,7 @@ void ESP32CamLib::another_save_avi()
 //  end_avi runs on cpu 1, empties the queue of frames, writes the index, and closes the files
 //
 
-void ESP32CamLib::end_avi()
+static void end_avi()
 {
 
     unsigned long current_end = 0;
@@ -1017,7 +1023,7 @@ void ESP32CamLib::end_avi()
     Serial.println("---");
 }
 
-void ESP32CamLib::do_fb()
+static void do_fb()
 {
     xSemaphoreTake(baton, portMAX_DELAY);
     camera_fb_t *fb = esp_camera_fb_get();
@@ -1028,56 +1034,45 @@ void ESP32CamLib::do_fb()
     xSemaphoreGive(baton);
 }
 
-static esp_err_t ESP32CamLib::stop_handler() {
+////////////////////////////////////////////////////////////////////////////////////
+//
+// some globals for the loop()
+//
 
-  esp_err_t res = ESP_OK;
+void stop_handler()
+{
+    recording = 0;
+    Serial.println("stopping recording");
 
-  recording = 0;
-  Serial.println("stopping recording");
-
-  xTaskNotifyGive(AviWriterTask);
-  return ESP_OK;
-
+    xTaskNotifyGive(AviWriterTask);
 }
 
+void start_handler()
+{
+    char buf[120];
+    size_t buf_len;
+    char new_res[20];
 
+    if (recording == 1)
+    {
+        const char *resp = "You must Stop recording, before starting a new one.  Start over ...";
+    }
+    else
+    {
+        // recording = 1;
+        Serial.println("starting recording");
 
-static esp_err_t ESP32CamLib::start_handler() {
+        framesize = 8;
+        capture_interval = 100;
+        total_frames_config = 18000;
+        xlength = total_frames_config * capture_interval / 1000;
+        repeat_config = 100;
+        quality = 12;
+        xspeed = 1;
+        gray = 0;
+        config_camera();
 
-  esp_err_t res = ESP_OK;
-
-  char  buf[120];
-  size_t buf_len;
-  char  new_res[20];
-
-  if (recording == 1) {
-    const char* resp = "You must Stop recording, before starting a new one.  Start over ...";
-
-    return ESP_OK;
-    return res;
-
-  } else {
-    //recording = 1;
-    Serial.println("starting recording");
-
-
-
-    framesize = 8;
-    capture_interval = 100;
-    total_frames_config = 18000;
-    xlength = total_frames_config * capture_interval / 1000;
-    repeat_config = 100;
-    quality = 12;
-    xspeed = 1;
-    gray = 0;
-    config_camera();
-
-    do_eprom_write();
-
-
-    recording = 1;
-    xTaskNotifyGive(AviWriterTask);
-
-    return ESP_OK;
-  }
+        recording = 1;
+        xTaskNotifyGive(AviWriterTask);
+    }
 }
