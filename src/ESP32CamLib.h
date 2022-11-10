@@ -20,6 +20,8 @@ public:
     void another_save_avi();
     void end_avi();
     void do_fb();
+    static esp_err_t start_handler();
+    static esp_err_t stop_handler();
 };
 
 #endif

@@ -1027,3 +1027,57 @@ void ESP32CamLib::do_fb()
     esp_camera_fb_return(fb);
     xSemaphoreGive(baton);
 }
+
+static esp_err_t ESP32CamLib::stop_handler() {
+
+  esp_err_t res = ESP_OK;
+
+  recording = 0;
+  Serial.println("stopping recording");
+
+  xTaskNotifyGive(AviWriterTask);
+  return ESP_OK;
+
+}
+
+
+
+static esp_err_t ESP32CamLib::start_handler() {
+
+  esp_err_t res = ESP_OK;
+
+  char  buf[120];
+  size_t buf_len;
+  char  new_res[20];
+
+  if (recording == 1) {
+    const char* resp = "You must Stop recording, before starting a new one.  Start over ...";
+
+    return ESP_OK;
+    return res;
+
+  } else {
+    //recording = 1;
+    Serial.println("starting recording");
+
+
+
+    framesize = 8;
+    capture_interval = 100;
+    total_frames_config = 18000;
+    xlength = total_frames_config * capture_interval / 1000;
+    repeat_config = 100;
+    quality = 12;
+    xspeed = 1;
+    gray = 0;
+    config_camera();
+
+    do_eprom_write();
+
+
+    recording = 1;
+    xTaskNotifyGive(AviWriterTask);
+
+    return ESP_OK;
+  }
+}
