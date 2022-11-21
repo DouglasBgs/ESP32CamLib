@@ -340,7 +340,6 @@ void deleteFolderOrFile(const char *val)
 void init_tasks()
 {
 
-    Serial.begin(115200);
     Serial.println("\n\n---");
 
     rtc_gpio_hold_dis(GPIO_NUM_33);
@@ -680,7 +679,7 @@ static void start_avi()
 
     count++;
 
-    sprintf(fname, "/sdcard/%drecording%d.avi", count, millis());
+    sprintf(fname, "/sdcard/%dtestedouglas%d.avi", count, millis());
 
     Serial.print("\nFile name will be >");
     Serial.print(fname);
@@ -1062,14 +1061,14 @@ void start_handler()
         // recording = 1;
         Serial.println("starting recording");
 
-        framesize = framesize;
-        capture_interval = capture_interval;
-        total_frames_config = total_frames_config;
+        framesize = 8;
+        capture_interval = 100;
+        total_frames_config = 18000;
         xlength = total_frames_config * capture_interval / 1000;
-        repeat_config = repeat_config;
-        quality = quality;
-        xspeed = xspeed;
-        gray = gray;
+        repeat_config = 100;
+        quality = 12;
+        xspeed = 1;
+        gray = 0;
         config_camera();
 
         recording = 1;
