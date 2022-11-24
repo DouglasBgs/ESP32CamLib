@@ -42,4 +42,4 @@ static void another_save_avi();
 static void end_avi();
 static void do_fb();
 void stop_handler();
-void start_handler();
+void start_handler(char *file);

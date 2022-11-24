@@ -32,15 +32,14 @@ volatile int  total_frames_config = 360;  //  how many frames - length of movie 
 */
 int count_avi = 0;
 int count_cam = 0;
-int new_config = 5; 
+int new_config = 5;
 int xlength = total_frames_config * capture_interval / 1000;
 int total_frames = total_frames_config;
 int recording = 0;
 int ready = 0;
-int count = 1;
 
 int diskspeed = 0;
-char fname[130];
+char *fname;
 
 long current_millis;
 long last_capture_millis = 0;
@@ -57,4 +56,3 @@ long totalp;
 long totalw;
 
 unsigned long nothing_avi = 0;
-
