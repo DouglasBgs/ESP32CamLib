@@ -39,7 +39,7 @@ int recording = 0;
 int ready = 0;
 
 int diskspeed = 0;
-char *fname;
+char fname[200];
 
 long current_millis;
 long last_capture_millis = 0;

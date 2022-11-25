@@ -677,8 +677,6 @@ static void start_avi()
 
     SD_MMC.mkdir(strftime_buf2);
 
-    sprintf(fname, "/sdcard%s.avi", fname);
-
     Serial.print("\nFile name will be >");
     Serial.print(fname);
     Serial.println("<");
@@ -1044,9 +1042,10 @@ void stop_handler()
     xTaskNotifyGive(AviWriterTask);
 }
 
-void start_handler(char *file)
+void start_handler(char file[200])
 {
-    fname = file;
+    delay(500);
+    sprintf(fname, "/sdcard/%s.avi", file);
     char buf[120];
     size_t buf_len;
     char new_res[20];
